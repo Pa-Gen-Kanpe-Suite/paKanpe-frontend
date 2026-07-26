@@ -11,27 +11,32 @@ permissions:
 jobs:
   image:
     runs-on: ubuntu-latest
-    # Déclaration globale de la variable pour le webhook du job
     env:
       DEPLOY_WEBHOOK_URL: ${{ secrets.STAGING_DEPLOY_WEBHOOK_URL }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      # 1. Convertit le nom du dépôt en minuscules (ex: paKanpe-frontend -> pakanpe-frontend)
-      - name: Downcase repository name
-        run: echo "REPO_LOWER=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
+      # 1. Conversion explicite en minuscules via Bash + 'tr' (compatible à 100% avec tous les shells Linux)
+      - name: Lowercase repository name
+        id: repo_format
+        run: |
+          echo "REPO_LOWER=$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
-      - uses: docker/setup-buildx-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - uses: docker/login-action@v3
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # 2. Utilisation de env.REPO_LOWER au lieu de github.repository
-      - uses: docker/build-push-action@v6
+      # 2. Utilisation sécurisée du tag en minuscules
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
