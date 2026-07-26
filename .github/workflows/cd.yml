@@ -18,11 +18,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 1. Conversion explicite en minuscules via Bash + 'tr' (compatible à 100% avec tous les shells Linux)
+      # 1. Utilisation de $GITHUB_OUTPUT (méthode officielle recommandée par GitHub)
       - name: Lowercase repository name
         id: repo_format
         run: |
-          echo "REPO_LOWER=$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+          echo "repo_lower=$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -34,15 +34,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # 2. Utilisation sécurisée du tag en minuscules
+      # 2. Utilisation de ${{ steps.repo_format.outputs.repo_lower }}
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ env.REPO_LOWER }}:${{ github.sha }}
-            ghcr.io/${{ env.REPO_LOWER }}:latest
+            ghcr.io/${{ steps.repo_format.outputs.repo_lower }}:${{ github.sha }}
+            ghcr.io/${{ steps.repo_format.outputs.repo_lower }}:latest
 
       - name: Trigger staging deployment
         if: ${{ env.DEPLOY_WEBHOOK_URL != '' }}
