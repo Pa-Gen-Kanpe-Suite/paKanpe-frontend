@@ -2,7 +2,7 @@ name: Frontend CD
 
 on:
   push:
-    branches: [main]
+    branches: [main, QA/devOPS-branch]
 
 permissions:
   contents: read
@@ -18,11 +18,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 1. Utilisation de $GITHUB_OUTPUT (méthode officielle recommandée par GitHub)
-      - name: Lowercase repository name
-        id: repo_format
-        run: |
-          echo "repo_lower=$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+      # Conversion en minuscules exacte comme sur le Backend
+      - name: Downcase repository name
+        run: echo "REPO_LOWER=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -34,15 +32,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # 2. Utilisation de ${{ steps.repo_format.outputs.repo_lower }}
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ steps.repo_format.outputs.repo_lower }}:${{ github.sha }}
-            ghcr.io/${{ steps.repo_format.outputs.repo_lower }}:latest
+            ghcr.io/${{ env.REPO_LOWER }}:${{ github.sha }}
+            ghcr.io/${{ env.REPO_LOWER }}:latest
 
       - name: Trigger staging deployment
         if: ${{ env.DEPLOY_WEBHOOK_URL != '' }}
