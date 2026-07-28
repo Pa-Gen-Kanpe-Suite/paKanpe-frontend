@@ -7,4 +7,5 @@ coverage/
 playwright-report/
 test-results/
 npm-debug.log*
-venv/
+
+.env.local
