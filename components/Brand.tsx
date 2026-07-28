@@ -1,11 +1,15 @@
-import Link from "next/link";
+import React from "react";
 
-export function Brand() {
+export function Brand({ className }: BrandProps) {
   return (
-    <Link className="brand" href="/" aria-label="PA GEN KANPE — accueil">
-      <span className="brand-mark" aria-hidden="true">PGK</span>
-      <span><strong>PA GEN KANPE</strong><small>UNIBANK · Agence principale</small></span>
-    </Link>
+    <img
+      src="/logo.png"
+      alt="Logo"
+      className="mx-auto mt-4"
+      style={{
+        width: "120px",
+        height: "auto",
+      }}
+    />
   );
 }
-
