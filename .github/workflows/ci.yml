@@ -6,6 +6,18 @@ on:
     branches: [main, develop, QA/devOPS-branch]
 
 jobs:
+  # 🔒 NOUVEAU JOB : Security SAST Scan
+  security:
+    name: Security SAST Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Semgrep Security Audit
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: "p/security-audit p/owasp-top-ten"
+
   quality:
     name: Lint, Test & Build
     runs-on: ubuntu-latest
@@ -17,7 +29,6 @@ jobs:
           node-version: 24
           cache: npm
 
-      # MODIFICATION 1 ICI
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
@@ -33,6 +44,7 @@ jobs:
   e2e:
     name: Playwright E2E Tests
     runs-on: ubuntu-latest
+    needs: quality # Attend que le build passe avant de lancer les E2E (économise des minutes GitHub)
     steps:
       - uses: actions/checkout@v4
 
@@ -41,11 +53,9 @@ jobs:
           node-version: 24
           cache: npm
 
-      # MODIFICATION 2 ICI
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
-      # 1. Mise en cache des binaires de navigateurs Playwright
       - name: Cache Playwright Browsers
         uses: actions/cache@v4
         id: playwright-cache
@@ -64,7 +74,6 @@ jobs:
       - name: Run E2E Tests
         run: npm run test:e2e
 
-      # 2. Upload des rapports et traces si un test E2E échoue
       - name: Upload Playwright Report
         if: failure()
         uses: actions/upload-artifact@v4
