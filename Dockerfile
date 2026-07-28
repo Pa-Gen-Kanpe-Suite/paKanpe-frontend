@@ -1,7 +1,8 @@
 FROM node:24-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci
+# Remplacé npm ci par npm install avec le flag legacy-peer-deps
+RUN npm install --legacy-peer-deps
 
 FROM node:24-alpine AS builder
 WORKDIR /app
@@ -21,4 +22,3 @@ USER nextjs
 EXPOSE 3000
 ENV PORT=3000 HOSTNAME=0.0.0.0
 CMD ["node", "server.js"]
-
