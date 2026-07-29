@@ -91,7 +91,7 @@ export default function LoginPage() {
         <div>
           <span>PA GEN KANPE</span>
           <blockquote>« Votre temps vous appartient. »</blockquote>
-          <p>Une expérience bancaire plus fluide, équitable et accessible.</p>
+          <p></p>
         </div>
       </aside>
     </main>
